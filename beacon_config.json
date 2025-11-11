@@ -1,0 +1,36 @@
+{
+  "beacons": [
+    {
+      "uuid": "FDA50693-A4E2-4FB1-AFCF-C6EB07647825",
+      "major": 10011,
+      "minor": 10925,
+      "position": [0.0, 10.0, 0.5],
+      "name": "BeeLinker1"
+    },
+     {
+      "uuid": "FDA50693-A4E2-4FB1-AFCF-C6EB07647825",
+      "major": 10011,
+      "minor": 10929,
+      "position": [0.0, 0.0, 0.5],
+      "name": "BeeLinker2"
+    },
+     {
+      "uuid": "FDA50693-A4E2-4FB1-AFCF-C6EB07647825",
+      "major": 10011,
+      "minor": 10926,
+      "position": [15.0, 0.0, 0.5],
+      "name": "BeeLinker3"
+    },
+     {
+      "uuid": "FDA50693-A4E2-4FB1-AFCF-C6EB07647825",
+      "major": 10011,
+      "minor": 10944,
+      "position": [15.0, 10.0, 0.5],
+      "name": "BeeLinker4"
+    }
+  ],
+  "environment_factor": 2.5,
+  "scan_interval": 5.0,
+  "min_beacons_required": 3,
+  "room_size": [15.0, 10.0, 5.5]
+}
