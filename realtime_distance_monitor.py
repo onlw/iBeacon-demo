@@ -245,8 +245,8 @@ async def main():
     parser.add_argument('--uuid', type=str, help='Target UUID')
     parser.add_argument('--major', type=int, help='Target Major')
     parser.add_argument('--minor', type=int, help='Target Minor')
-    parser.add_argument('--env-factor', type=float, default=4.0,
-                       help='Environment attenuation factor (default: 3.0)')
+    parser.add_argument('--env-factor', type=float, default=2,
+                       help='Environment attenuation factor (default: 2.0)')
     parser.add_argument('--interval', type=float, default=3.0,
                        help='Scan interval in seconds (default: 3.0)')
     parser.add_argument('--no-plot', action='store_true',
@@ -254,6 +254,7 @@ async def main():
 
     args = parser.parse_args()
 
+    print(args)
     monitor = RealtimeDistanceMonitor(environment_factor=args.env_factor)
 
     await monitor.monitor(
