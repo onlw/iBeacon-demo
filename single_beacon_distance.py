@@ -46,14 +46,6 @@ class SingleBeaconDistance:
         ratio = (tx_power - rssi) / (10.0 * self.environment_factor)
         distance = math.pow(10, ratio)
 
-        # 分段校准
-        # if distance < 0.5:
-        #     distance = distance * 0.9
-        # elif distance < 1.0:
-        #     distance = distance * 0.95
-        # elif distance > 10.0:
-        #     distance = distance * 1.1
-
         return distance
 
     def get_distance_category(self, distance: float) -> str:

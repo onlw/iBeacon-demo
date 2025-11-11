@@ -34,17 +34,6 @@ class DistanceEstimator:
         ratio = (tx_power - rssi) / (10.0 * n)
         distance = math.pow(10, ratio)
 
-        # 分段校准：改进近距离和远距离的精度
-        if distance < 0.5:
-            # 极近距离：线性校准
-            distance = distance * 0.9
-        elif distance < 1.0:
-            # 近距离：略微降低
-            distance = distance * 0.95
-        elif distance > 10.0:
-            # 远距离：增加衰减补偿
-            distance = distance * 1.1
-
         return distance
 
 
