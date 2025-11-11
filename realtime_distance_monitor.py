@@ -1,6 +1,6 @@
 """
-实时 iBeacon 距离监控程序
-带有实时图表可视化的距离监控工具
+Real-time iBeacon Distance Monitor
+Distance monitoring tool with real-time chart visualization
 """
 import asyncio
 import math
@@ -13,119 +13,115 @@ from matplotlib.animation import FuncAnimation
 from collections import deque
 import numpy as np
 
+# Matplotlib configuration
+import matplotlib
+matplotlib.rcParams['axes.unicode_minus'] = False
+
 
 class RealtimeDistanceMonitor:
-    """实时距离监控器（带可视化）"""
+    """Real-time Distance Monitor (with visualization)"""
 
     def __init__(self, environment_factor: float = 3.0, history_size: int = 50):
         """
-        初始化监控器
+        Initialize monitor
 
         Args:
-            environment_factor: 环境衰减因子
-            history_size: 历史数据保存数量
+            environment_factor: Environment attenuation factor
+            history_size: Number of historical data points to keep
         """
         self.environment_factor = environment_factor
         self.history_size = history_size
 
-        # 数据存储
+        # Data storage
         self.timestamps = deque(maxlen=history_size)
         self.distances = deque(maxlen=history_size)
         self.rssi_values = deque(maxlen=history_size)
 
-        # 目标 beacon
+        # Target beacon
         self.target_beacon = None
         self.beacon_info = {}
 
-        # 可视化
+        # Visualization
         self.fig = None
         self.axes = None
 
     def calculate_distance(self, rssi: int, tx_power: int) -> float:
-        """计算距离"""
+        """Calculate distance"""
         if rssi == 0:
             return -1.0
 
         ratio = (tx_power - rssi) / (10.0 * self.environment_factor)
         distance = math.pow(10, ratio)
 
-        # 分段校准
-        if distance < 0.5:
-            distance = distance * 0.9
-        elif distance < 1.0:
-            distance = distance * 0.95
-        elif distance > 10.0:
-            distance = distance * 1.1
-
         return distance
 
     def setup_plot(self):
-        """设置可视化图表"""
+        """Setup visualization charts"""
         plt.style.use('seaborn-v0_8-darkgrid')
         self.fig, self.axes = plt.subplots(2, 1, figsize=(12, 8))
 
-        # 距离图表
-        self.axes[0].set_title('实时距离监控', fontsize=14, fontweight='bold')
-        self.axes[0].set_xlabel('时间 (秒)')
-        self.axes[0].set_ylabel('距离 (米)')
+        # Distance chart
+        self.axes[0].set_title('Real-time Distance Monitoring', fontsize=14, fontweight='bold')
+        self.axes[0].set_xlabel('Time (seconds)')
+        self.axes[0].set_ylabel('Distance (meters)')
         self.axes[0].grid(True, alpha=0.3)
 
-        # RSSI 图表
-        self.axes[1].set_title('RSSI 信号强度', fontsize=14, fontweight='bold')
-        self.axes[1].set_xlabel('时间 (秒)')
+        # RSSI chart
+        self.axes[1].set_title('RSSI Signal Strength', fontsize=14, fontweight='bold')
+        self.axes[1].set_xlabel('Time (seconds)')
         self.axes[1].set_ylabel('RSSI (dBm)')
         self.axes[1].grid(True, alpha=0.3)
 
         plt.tight_layout()
 
     def update_plot(self):
-        """更新图表"""
+        """Update charts"""
         if not self.timestamps:
             return
 
-        # 清空图表
+        # Clear charts
         for ax in self.axes:
             ax.clear()
 
-        # 时间轴 (相对时间)
+        # Time axis (relative time)
         times = [(t - self.timestamps[0]).total_seconds() for t in self.timestamps]
 
-        # 距离图表
-        self.axes[0].plot(times, list(self.distances), 'b-', linewidth=2, label='距离')
+        # Distance chart
+        self.axes[0].plot(times, list(self.distances), 'b-', linewidth=2, label='Distance')
         self.axes[0].fill_between(times, 0, list(self.distances), alpha=0.3)
-        self.axes[0].set_title('实时距离监控', fontsize=14, fontweight='bold')
-        self.axes[0].set_xlabel('时间 (秒)')
-        self.axes[0].set_ylabel('距离 (米)')
+        self.axes[0].set_title('Real-time Distance Monitoring', fontsize=14, fontweight='bold')
+        self.axes[0].set_xlabel('Time (seconds)')
+        self.axes[0].set_ylabel('Distance (meters)')
         self.axes[0].grid(True, alpha=0.3)
         self.axes[0].legend()
 
-        # 添加距离区间标记
-        self.axes[0].axhline(y=0.5, color='r', linestyle='--', alpha=0.5, label='紧邻')
-        self.axes[0].axhline(y=2.0, color='orange', linestyle='--', alpha=0.5, label='近距离')
-        self.axes[0].axhline(y=5.0, color='yellow', linestyle='--', alpha=0.5, label='中距离')
+        # Add distance range markers
+        self.axes[0].axhline(y=0.5, color='r', linestyle='--', alpha=0.5, label='Immediate')
+        self.axes[0].axhline(y=2.0, color='orange', linestyle='--', alpha=0.5, label='Near')
+        self.axes[0].axhline(y=5.0, color='yellow', linestyle='--', alpha=0.5, label='Medium')
 
-        # 显示当前距离
+        # Display current distance
         if self.distances:
             current_dist = self.distances[-1]
-            self.axes[0].text(0.02, 0.98, f'当前距离: {current_dist:.2f}m',
+            self.axes[0].text(0.02, 0.98, f'Current: {current_dist:.2f}m',
                             transform=self.axes[0].transAxes,
                             verticalalignment='top',
                             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
                             fontsize=12, fontweight='bold')
 
-        # RSSI 图表
+        # RSSI chart
         self.axes[1].plot(times, list(self.rssi_values), 'g-', linewidth=2, label='RSSI')
         self.axes[1].fill_between(times, list(self.rssi_values), alpha=0.3)
-        self.axes[1].set_title('RSSI 信号强度', fontsize=14, fontweight='bold')
-        self.axes[1].set_xlabel('时间 (秒)')
+        self.axes[1].set_title('RSSI Signal Strength', fontsize=14, fontweight='bold')
+        self.axes[1].set_xlabel('Time (seconds)')
         self.axes[1].set_ylabel('RSSI (dBm)')
         self.axes[1].grid(True, alpha=0.3)
         self.axes[1].legend()
 
-        # 显示当前 RSSI
+        # Display current RSSI
         if self.rssi_values:
             current_rssi = self.rssi_values[-1]
-            self.axes[1].text(0.02, 0.98, f'当前 RSSI: {current_rssi} dBm',
+            self.axes[1].text(0.02, 0.98, f'Current: {current_rssi} dBm',
                             transform=self.axes[1].transAxes,
                             verticalalignment='top',
                             bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.8),
@@ -141,27 +137,27 @@ class RealtimeDistanceMonitor:
                      scan_interval: float = 1.0,
                      show_plot: bool = True):
         """
-        开始监控
+        Start monitoring
 
         Args:
-            target_uuid: 目标 UUID
-            target_major: 目标 Major
-            target_minor: 目标 Minor
-            scan_interval: 扫描间隔 (秒)
-            show_plot: 是否显示图表
+            target_uuid: Target UUID
+            target_major: Target Major
+            target_minor: Target Minor
+            scan_interval: Scan interval (seconds)
+            show_plot: Whether to show charts
         """
         print("=" * 70)
-        print("实时 iBeacon 距离监控")
+        print("Real-time iBeacon Distance Monitor")
         print("=" * 70)
-        print(f"扫描间隔: {scan_interval} 秒")
-        print(f"环境衰减因子: {self.environment_factor}")
-        print("按 Ctrl+C 停止监控")
+        print(f"Scan interval: {scan_interval} seconds")
+        print(f"Environment factor: {self.environment_factor}")
+        print("Press Ctrl+C to stop monitoring")
         print("=" * 70)
         print()
 
         if show_plot:
             self.setup_plot()
-            plt.ion()  # 交互模式
+            plt.ion()  # Interactive mode
             plt.show()
 
         try:
@@ -177,7 +173,7 @@ class RealtimeDistanceMonitor:
                     )
 
                     if beacon_data:
-                        # 检查目标匹配
+                        # Check target matching
                         if target_uuid and beacon_data.uuid != target_uuid:
                             return
                         if target_major is not None and beacon_data.major != target_major:
@@ -185,7 +181,7 @@ class RealtimeDistanceMonitor:
                         if target_minor is not None and beacon_data.minor != target_minor:
                             return
 
-                        # 锁定目标
+                        # Lock target
                         if not self.target_beacon:
                             self.target_beacon = (beacon_data.uuid, beacon_data.major, beacon_data.minor)
                             self.beacon_info = {
@@ -194,7 +190,7 @@ class RealtimeDistanceMonitor:
                                 'minor': beacon_data.minor,
                                 'tx_power': beacon_data.tx_power
                             }
-                            print(f"\n✓ 锁定目标 iBeacon:")
+                            print(f"\nTarget iBeacon locked:")
                             print(f"  UUID: {beacon_data.uuid}")
                             print(f"  Major: {beacon_data.major}")
                             print(f"  Minor: {beacon_data.minor}")
@@ -203,58 +199,58 @@ class RealtimeDistanceMonitor:
                         if self.target_beacon == (beacon_data.uuid, beacon_data.major, beacon_data.minor):
                             current_beacon = beacon_data
 
-                # 扫描
+                # Scan
                 scanner = BleakScanner(detection_callback=detection_callback)
                 await scanner.start()
                 await asyncio.sleep(scan_interval)
                 await scanner.stop()
 
-                # 处理数据
+                # Process data
                 if current_beacon:
-                    # 计算距离
+                    # Calculate distance
                     distance = self.calculate_distance(
                         current_beacon.rssi,
                         current_beacon.tx_power
                     )
 
-                    # 添加到历史
+                    # Add to history
                     self.timestamps.append(datetime.now())
                     self.distances.append(distance)
                     self.rssi_values.append(current_beacon.rssi)
 
-                    # 打印信息
+                    # Print info
                     print(f"[{datetime.now().strftime('%H:%M:%S')}] "
-                          f"距离: {distance:.2f}m | RSSI: {current_beacon.rssi} dBm")
+                          f"Distance: {distance:.2f}m | RSSI: {current_beacon.rssi} dBm")
 
-                    # 更新图表
+                    # Update charts
                     if show_plot:
                         self.update_plot()
 
                 else:
-                    print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠ 信号丢失")
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] Warning: Signal lost")
 
         except KeyboardInterrupt:
-            print("\n\n监控已停止")
+            print("\n\nMonitoring stopped")
             if show_plot:
                 plt.ioff()
-                print("\n图表窗口保持打开，关闭窗口以退出...")
+                print("\nChart window remains open, close it to exit...")
                 plt.show()
 
 
 async def main():
-    """主函数"""
+    """Main function"""
     import argparse
 
-    parser = argparse.ArgumentParser(description='实时 iBeacon 距离监控')
-    parser.add_argument('--uuid', type=str, help='目标 UUID')
-    parser.add_argument('--major', type=int, help='目标 Major')
-    parser.add_argument('--minor', type=int, help='目标 Minor')
-    parser.add_argument('--env-factor', type=float, default=3.0,
-                       help='环境衰减因子 (默认: 3.0)')
-    parser.add_argument('--interval', type=float, default=1.0,
-                       help='扫描间隔/秒 (默认: 1.0)')
+    parser = argparse.ArgumentParser(description='Real-time iBeacon Distance Monitor')
+    parser.add_argument('--uuid', type=str, help='Target UUID')
+    parser.add_argument('--major', type=int, help='Target Major')
+    parser.add_argument('--minor', type=int, help='Target Minor')
+    parser.add_argument('--env-factor', type=float, default=4.0,
+                       help='Environment attenuation factor (default: 3.0)')
+    parser.add_argument('--interval', type=float, default=3.0,
+                       help='Scan interval in seconds (default: 3.0)')
     parser.add_argument('--no-plot', action='store_true',
-                       help='禁用图表显示')
+                       help='Disable chart display')
 
     args = parser.parse_args()
 
